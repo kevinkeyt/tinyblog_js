@@ -20,26 +20,23 @@ function getUniqueString() {
 }
 
 function validateToken(req, res) {
-    const token = req.headers.authToken;
+    var token = req.headers['authtoken'];
     if(!token) {
         res.status(403).send('Invalid Token');
         return;
     }
+    token = JSON.parse(token);
 
     if(token.expiresOn <= new Date()) {
         res.status(403).send('Token Expired!');
         return;
     }
-    const tokenValidation = sha512(token.id, token.expiresOn.getTime().toString());
+    var expires = new Date(token.expiresOn);
+    const tokenValidation = crypto.sha512(token.id, expires.getTime().toString());
     if(tokenValidation !== token.token) {
         res.status(403).send('Invalid Token');
+        return;
     }
-
-    const expires = new Date();
-    expires.setMinutes(expires.getMinutes() + 30);
-    const cryptotoken = sha512(user._id, expires.getTime().toString());
-    token.expiresOn = expires;
-    token.token = cryptotoken;
     return token;
 }
 

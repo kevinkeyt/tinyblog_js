@@ -22,3 +22,14 @@ app.use('/api/users', userRoutes);
 // });
 
 app.listen(port, () => console.log(`API running on localhost:${port}`));
+
+
+var token = {
+    "id": "5a40682d5c60515ac827fbaf",
+    "firstName": "Kevin",
+    "lastName": "Keyt",
+    "email": "kevinkeyt@gmail.com",
+    "expiresOn": "2017-12-29T03:26:00.769Z",
+    "token": "169fa42767051555f83a61953037d725d70a4dc4b5661d3a905a6e84d6294196557e0875c4226b4d1bf0be48b2643b16d223c6f49e1aeb662808a39d6130dcba"
+};
+console.log(JSON.stringify(token));

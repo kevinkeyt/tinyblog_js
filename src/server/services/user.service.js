@@ -6,6 +6,10 @@ const ReadPreference = require('mongodb').ReadPreference;
 require('../mongo').connect();
 
 function getUsers(req, res) {
+    if(!helpers.validateToken(req, res)) {
+        return;
+    }
+
     const docquery = User.find({}).read(ReadPreference.NEAREST);
     docquery.exec()
     .then(users => {
@@ -17,6 +21,10 @@ function getUsers(req, res) {
 }
 
 function getUser(req, res) {
+    if(!helpers.validateToken(req, res)) {
+        return;
+    }
+
     User.findOne({ _id: req.params.id}, (error, user) => {
         if (helpers.checkServerError(res, error)) {
             return;
@@ -26,6 +34,16 @@ function getUser(req, res) {
         }
         return res.status(200).json(user);
     });
+}
+
+function reissueToken(req, res) {
+    var token = helpers.validateToken(req, res);
+    var expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 30);
+    const cryptotoken = crypto.sha512(token.id, expires.getTime().toString());
+    token.expiresOn = expires;
+    token.token = cryptotoken;
+    res.status(200).send(token);
 }
 
 function loginUser(req, res) {
@@ -85,32 +103,80 @@ function loginUser(req, res) {
 }
 
 function addUser(req, res) {
+    if(!helpers.validateToken(req, res)) {
+        return;
+    }
     User.findOne({ email: req.body.email }, (error, item) => {
-        if(helpsers.checkFound(res, item)) {
+        if(item) {
             res.status(409).send('Email already exists!');
             return;
         }
+        const salt = crypto.genRandomString(12);
+        const saltedPassword = crypto.sha512(req.body.password, salt);
+        var lockDate = new Date();
+        const postedUser = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            password: saltedPassword,
+            salt: salt,
+            createdOn: new Date(),
+            loginAttempts: 0,
+            lockedUntil: lockDate.setMinutes(lockDate.getMinutes() - 30)
+        };
+        const user = new User(postedUser);
+        user.save(error => {
+            if (helpers.checkServerError(res, error)) {
+                return;
+            }
+            res.status(200).json(user);
+            console.log('User created!');
+        });
     });
-    const salt = crypto.genRandomString(12);
-    const saltedPassword = crypto.sha512(req.body.password, salt);
-    var lockDate = new Date();
-    const postedUser = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        password: saltedPassword,
-        salt: salt,
-        createdOn: new Date(),
-        loginAttempts: 0,
-        lockedUntil: lockDate.setMinutes(lockDate.getMinutes() - 30)
-    };
-    const user = new User(postedUser);
-    user.save(error => {
-        if (helpers.checkServerError(res, error)) {
+}
+
+function putUser(req, res) {
+    if(!helpers.validateToken(req, res)) {
+        return;
+    }
+    User.findOne({ email: req.body.email}, (error, check) => {
+        if (helpers.checkServerError(res, error)) return;
+        if(check && check._id.toString() !== req.params.id) {
+            res.status(500).send('Email is already in use!');
             return;
         }
-        res.status(201).json(post);
-        console.log('User created!');
+        User.findOne({ _id: req.params.id }, (error, user) => {
+            if (helpers.checkServerError(res, error)) return;
+            if (!helpers.checkFound(res, user)) return;
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
+            user.email = req.body.email;
+            user.save(error => {
+                if(helpers.checkServerError(res, error)) {
+                    return;
+                }
+                res.status(200).json(user);
+            });
+        });
+    });
+}
+
+function deleteUser(req, res) {
+    if(!helpers.validateToken(req, res)) {
+        return;
+    }
+    const id = req.params.id;
+    User.findOneAndRemove({ _id: id}).then(user => {
+        if(!helpers.checkFound(res, user)) {
+            return;
+        }
+        res.status(200).json(user);
+        console.log('User deleted successfully!');
+    })
+    .catch(error => {
+        if(helpers.checkServerError(res, error)) {
+            return;
+        }
     });
 }
 
@@ -118,5 +184,8 @@ module.exports = {
     getUsers,
     getUser,
     addUser,
-    loginUser
+    putUser,
+    deleteUser,
+    loginUser,
+    reissueToken
 }

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const commentService = require('../services/comment.service');
 
-router.get('/all/:id', (req, res) => {
+router.get('/get/:id', (req, res) => {
     commentService.getComments(req, res);
 });
 
