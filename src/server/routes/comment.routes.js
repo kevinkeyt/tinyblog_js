@@ -7,4 +7,16 @@ router.get('/get/:id', (req, res) => {
     commentService.getComments(req, res);
 });
 
+router.post('/comment', (req, res) => {
+    commentService.addComment(req, res);
+});
+
+router.put('/comment/:id', (req, res) => {
+    commentService.updateComment(req, res);
+});
+
+router.delete('/comment/:id', (req, res) => {
+    commentService.deleteComment(req, res);
+});
+
 module.exports = router;

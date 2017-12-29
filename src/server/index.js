@@ -24,12 +24,12 @@ app.use('/api/users', userRoutes);
 app.listen(port, () => console.log(`API running on localhost:${port}`));
 
 
-var token = {
-    "id": "5a40682d5c60515ac827fbaf",
-    "firstName": "Kevin",
-    "lastName": "Keyt",
-    "email": "kevinkeyt@gmail.com",
-    "expiresOn": "2017-12-29T03:26:00.769Z",
-    "token": "169fa42767051555f83a61953037d725d70a4dc4b5661d3a905a6e84d6294196557e0875c4226b4d1bf0be48b2643b16d223c6f49e1aeb662808a39d6130dcba"
-};
-console.log(JSON.stringify(token));
+// var token = {
+//     "id": "5a40682d5c60515ac827fbaf",
+//     "firstName": "Kevin",
+//     "lastName": "Keyt",
+//     "email": "kevinkeyt@gmail.com",
+//     "expiresOn": "2017-12-29T14:32:59.472Z",
+//     "token": "8552e5c59f4e9bbe4ae58c010dc7c5e45fa7f16b4460ed099dc82483b398c1068533a9039248ea5d177c083bdc29cdcfa326d81c389460125814c4ad4c80f1e3"
+// };
+// console.log(JSON.stringify(token));
