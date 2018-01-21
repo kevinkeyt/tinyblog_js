@@ -2,6 +2,9 @@ const express = require('express');
 const path = require('path');
 const cryptoService = require('./services/crypto.service');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const jwt = require('jsonwebtoken');
+
 const postRoutes = require('./routes/post.routes');
 const commentRoutes = require('./routes/comment.routes');
 const userRoutes = require('./routes/user.routes');
@@ -13,6 +16,10 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended:false }));
+
+app.use(morgan('dev'));
+app.set('secret', 'dkd94kdkd*dkdk!'); 
+
 //app.use(express.static(path.join(root, 'dist')));
 app.use('/api/comments', commentRoutes);
 app.use('/api/posts', postRoutes);

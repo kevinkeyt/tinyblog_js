@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 const User = require('../models/user.model');
 const crypto = require('../services/crypto.service');
 const helpers = require('../services/helper.service');
@@ -13,10 +15,10 @@ function getUsers(req, res) {
     const docquery = User.find({}).read(ReadPreference.NEAREST);
     docquery.exec()
     .then(users => {
-        res.status(200).json(users);
+        return res.status(200).json(users);
     })
     .catch(error => {
-        res.status(500).send(error);
+        return res.status(500).send(error);
     });
 }
 
@@ -84,18 +86,19 @@ function loginUser(req, res) {
 
         if (user.loginAttempts === 0) {
             // Get and return Token
-            const expires = new Date();
-            expires.setMinutes(expires.getMinutes() + 30);
-            const token = crypto.sha512(user._id.toString(), expires.getTime().toString());
-            const userToken = {
+            var token = jwt.sign({
+                agen: req.headers['user-agent'],
+                exp: Math.floor(new Date().getTime()/1000) + 7*24*60*60
+            }, 'dkd94kdkd*dkdk!');
+            
+            const payload = {
                 id: user._id.toString(),
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
-                expiresOn: expires,
                 token: token
             };
-            res.status(200).json(userToken);
+            res.status(200).json(payload);
         } else {
             res.status(403).send('Invalid Login!');
         }

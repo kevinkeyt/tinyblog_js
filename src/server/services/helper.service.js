@@ -1,4 +1,6 @@
+
 const crypto = require('../services/crypto.service');
+const jwt = require('jsonwebtoken');
 
 function checkServerError(res, error) {
     if (error) {
@@ -20,24 +22,19 @@ function getUniqueString() {
 }
 
 function validateToken(req, res) {
-    var token = req.headers['authtoken'];
-    if(!token) {
-        res.status(403).send('Invalid Token');
+    var token = req.headers.authorization;
+    try {
+        var decoded = jwt.verify(token,'dkd94kdkd*dkdk!');
+    } catch(e) {
+        res.status(403).json({ status: false, msg: (e.message) ? e.message : e });
         return;
     }
-    token = JSON.parse(token);
-
-    if(token.expiresOn <= new Date()) {
-        res.status(403).send('Token Expired!');
+    if(!decoded) {
+        res.status(403).json({ status: false, msg: 'Invalid Token' });
         return;
+    } else {
+        return decoded;
     }
-    var expires = new Date(token.expiresOn);
-    const tokenValidation = crypto.sha512(token.id, expires.getTime().toString());
-    if(tokenValidation !== token.token) {
-        res.status(403).send('Invalid Token');
-        return;
-    }
-    return token;
 }
 
 module.exports = {
